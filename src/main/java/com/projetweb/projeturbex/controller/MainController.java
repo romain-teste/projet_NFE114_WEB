@@ -83,6 +83,46 @@ public class MainController {
 	    
 	    return lieuRepository.findAll();
 	  }
+	  @GetMapping("/lieu/pays/{lieuPays}")
+	  public @ResponseBody Iterable<Lieux> getLieuxByPays(@PathVariable String lieuPays) {
+		  return lieuRepository.findByLieuPays(lieuPays);
+		  
+	  }
+	  @GetMapping("/lieu/region/{lieuPays}/{lieuRegion}")
+	  public @ResponseBody Iterable<Lieux> getLieuxByPaysAndRegion(@PathVariable String lieuPays, @PathVariable String lieuRegion) {
+		  return lieuRepository.findByLieuPaysAndLieuRegion(lieuPays, lieuRegion);
+		  
+	  }
+	  @DeleteMapping("/lieu/suppr/{lieuid}")
+	  public void deleteLieuById(@PathVariable Integer lieuid){
+		  lieuRepository.deleteById(lieuid);
+	  }
+	  //http://localhost:8080/demo/modiflieu/1?newNomLieu=hello%20word&newLocalisation=1.23.45.78&newDescription=zzzzzzz&newLieuPays=france&newLieuRegion=alsace&newLieuType=fort
+	  @PutMapping(path="/modiflieu/{idlieu}")
+	  public @ResponseBody ResponseEntity<String> modifLieu (
+			  @PathVariable Integer idlieu,
+			  @RequestParam String newNomLieu, 
+			  @RequestParam String newLocalisation, 
+			  @RequestParam String newDescription, 
+			  @RequestParam String newLieuPays, 
+			  @RequestParam String newLieuRegion, 
+			  @RequestParam String newLieuType) {
+		  
+		  Lieux l = lieuRepository.findByidLieu(idlieu);
+		  if (l != null) {
+			  l.setnom(newNomLieu);
+			  l.setloc(newLocalisation);
+			  l.setdesc(newDescription);
+			  l.setLieuPays(newLieuPays);
+			  l.setLieuRegion(newLieuRegion);
+			  l.setLieuType(newLieuType);
+			  lieuRepository.save(l);
+			  return ResponseEntity.ok("Path updated");
+		  } else {
+			  return ResponseEntity.notFound().build();
+		  }
+	  }
+	
 	  
 	  @PostMapping(path="/addpays")
 	  public @ResponseBody String addNewPays (@RequestParam String name) {
@@ -96,6 +136,7 @@ public class MainController {
 	  public @ResponseBody Iterable<Pays> getallPays(){
 		  return paysRepository.findAll();
 	  }
+	  
 	  
 	//Créer un nouveau commentaire ex requet http://localhost:8080/demo/addcomm?idlieu=1&text=aaaaaaaaaaaaaaaaa
     @PostMapping ("/addcomm")
@@ -111,7 +152,7 @@ public class MainController {
 
     // Lire tous les commentaires ayant le même idLieu ex requet: http://localhost:8080/demo/lieu?idlieu=1
     @SuppressWarnings("unchecked")
-	@GetMapping("/lieu")
+	@GetMapping("/comm/lieu")
     public @ResponseBody Iterable<Commentaires> getCommentairesByLieu(@RequestParam Integer idlieu) {
         //Commentaires commentaires = commRepository.findByIdCom(idlieu);
         //return (Iterable<Commentaires>) ResponseEntity.ok(commentaires);
@@ -119,7 +160,7 @@ public class MainController {
     }
 
     // Lire un commentaire par son ID ex requet : http://localhost:8080/demo/changevisibility?id=1
-    @GetMapping("/changevisibility")
+    @GetMapping("/comm/changevisibility")
     public @ResponseBody String getCommentaireById(@RequestParam Integer id) {
     	commRepository.changeVisibility(id);
         return "visibility change";
@@ -128,7 +169,7 @@ public class MainController {
     }
 
     //Supprimer un commentaire par son ID
-    @PostMapping("/modifcom")
+    @PostMapping("/comm/modifcom")
     public @ResponseBody String modifCommentaire(@RequestParam Integer id, @RequestParam Integer idlieu, @RequestParam String text) {
     	commRepository.deleteById(id);
     	Commentaires c = new Commentaires();
@@ -141,7 +182,7 @@ public class MainController {
     }
     
     // Créer une nouvelle photo ex pequet:http://localhost:8080/demo/addphoto?idlieux=1&path=eeeeeeeeee
-    @PostMapping("/addphoto")
+    @PostMapping("/photo/addphoto")
     public ResponseEntity<String> createPhoto(
             @RequestParam Integer idlieux,
             @RequestParam String path
@@ -155,7 +196,7 @@ public class MainController {
     }
     
     // Lire toutes les photos ayant le même idLieux ex requet: http://localhost:8080/demo/photolieux?idlieux=1
-    @GetMapping("/photolieux")
+    @GetMapping("/photo/photolieux")
     public ResponseEntity<Iterable<Photos>> getPhotosByLieux(
             @RequestParam Integer idlieux
     ) {
