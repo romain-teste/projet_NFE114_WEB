@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,6 +44,7 @@ public class MainController {
 
 	  
 	  //ex PosteMan en POST: http://localhost:8080/demo/addadmin?name=FirstAdmin&mdp=1234
+		@CrossOrigin
 	  @PostMapping(path="/addadmin")
 	  public @ResponseBody String addNewAdmin (@RequestParam String name, 
 			  @RequestParam String mdp) {
@@ -53,7 +55,8 @@ public class MainController {
 		  
 		  return "Saved";
 	  }
-
+	  
+	  @CrossOrigin
 	  @GetMapping(path="/alladmin")
 	  public @ResponseBody Iterable<Administrateurs> getAllAdministrateurs() {
 	    
@@ -61,6 +64,7 @@ public class MainController {
 	  }
 	  
 	  //http://localhost:8080/demo/addlieu?nomLieu=hello%20word&localisation=1.23.45.78&description=zzzzzzz&lieuPays=france&lieuRegion=alsace&lieuType=ecole&idAdmin=1
+	  @CrossOrigin
 	  @PostMapping(path="/addlieu")
 	  public @ResponseBody String addNewLieu (@RequestParam String nomLieu, 
 			  @RequestParam String localisation, @RequestParam String description, 
@@ -79,9 +83,16 @@ public class MainController {
 		  return "Saved";
 	  }
 	  @GetMapping(path="/alllieu")
+	  @CrossOrigin
 	  public @ResponseBody Iterable<Lieux> getAllLieux() {
 	    
 	    return lieuRepository.findAll();
+	  }
+	  @GetMapping(path="/lieu/{idlieu}")
+	  @CrossOrigin
+	  public @ResponseBody Lieux getLieuxById(@PathVariable Integer idlieu) {
+	    
+	    return lieuRepository.findByidLieu(idlieu);
 	  }
 	  @GetMapping("/lieu/pays/{lieuPays}")
 	  public @ResponseBody Iterable<Lieux> getLieuxByPays(@PathVariable String lieuPays) {
@@ -93,11 +104,61 @@ public class MainController {
 		  return lieuRepository.findByLieuPaysAndLieuRegion(lieuPays, lieuRegion);
 		  
 	  }
+	  @CrossOrigin
+	  @GetMapping("/lieuByName")
+	  public @ResponseBody Iterable<Lieux> getLieuxByNom(@RequestParam String nameLieu) {
+		  Iterable<Lieux> lieuByNam;
+		  lieuByNam = lieuRepository.findBynomLieu(nameLieu);
+		  return lieuByNam;
+	  }
+	  @CrossOrigin
+	  @GetMapping("/lieuByFilter")
+	  public @ResponseBody Iterable<Lieux> getLieuxByFilter(@RequestParam String lieuPays, @RequestParam String lieuRegion, @RequestParam String lieuType) {
+		  Iterable<Lieux> lieuByFilter = null;
+		  if (!lieuPays.isEmpty() && !lieuRegion.isEmpty() && !lieuType.isEmpty()) {
+			  lieuByFilter = lieuRepository.findByLieuPaysAndLieuRegionAndLieuType(lieuPays, lieuRegion, lieuType);
+		  }
+		  if (!lieuPays.isEmpty() && !lieuRegion.isEmpty() && lieuType.isEmpty()) {
+			  lieuByFilter = lieuRepository.findByLieuPaysAndLieuRegion(lieuPays, lieuRegion);
+		  }
+		  if (!lieuPays.isEmpty() && lieuRegion.isEmpty() && !lieuType.isEmpty()) {
+			  lieuByFilter = lieuRepository.findByLieuPaysAndLieuType(lieuPays, lieuType);
+		  }
+		  if (lieuPays.isEmpty() && !lieuRegion.isEmpty() && !lieuType.isEmpty()) {
+			  lieuByFilter = lieuRepository.findByLieuRegionAndLieuType(lieuRegion, lieuType);
+		  }
+		  if (!lieuPays.isEmpty() && lieuRegion.isEmpty() && lieuType.isEmpty()) {
+			  lieuByFilter = lieuRepository.findByLieuPays(lieuPays);
+		  }
+		  if (lieuPays.isEmpty() && lieuRegion.isEmpty() && !lieuType.isEmpty()) {
+			  lieuByFilter = lieuRepository.findByLieuType(lieuType);
+		  }
+		  if (lieuPays.isEmpty() && !lieuRegion.isEmpty() && lieuType.isEmpty()) {
+			  lieuByFilter = lieuRepository.findByLieuRegion(lieuRegion);
+		  }
+		  if (lieuPays.isEmpty() && lieuRegion.isEmpty() && lieuType.isEmpty()) {
+			  lieuByFilter = lieuRepository.findAll();
+		  }
+		  /*if (!lieuPays.isEmpty()) {
+			  lieuByFilter = lieuRepository.findByLieuPays(lieuPays);
+		  }
+		  if (!lieuRegion.isEmpty()) {
+			  lieuByFilter = lieuRepository.findByLieuRegion(lieuRegion);
+		  }
+		  if (!lieuType.isEmpty()) {
+			  lieuByFilter = lieuRepository.findBylieuType(lieuType);
+		  }*/
+		  return lieuByFilter;
+		  
+	  }
+	  
 	  @DeleteMapping("/lieu/suppr/{lieuid}")
+	  @CrossOrigin
 	  public void deleteLieuById(@PathVariable Integer lieuid){
 		  lieuRepository.deleteById(lieuid);
 	  }
 	  //http://localhost:8080/demo/modiflieu/1?newNomLieu=hello%20word&newLocalisation=1.23.45.78&newDescription=zzzzzzz&newLieuPays=france&newLieuRegion=alsace&newLieuType=fort
+	  @CrossOrigin
 	  @PutMapping(path="/modiflieu/{idlieu}")
 	  public @ResponseBody ResponseEntity<String> modifLieu (
 			  @PathVariable Integer idlieu,
@@ -139,6 +200,7 @@ public class MainController {
 	  
 	  
 	//Créer un nouveau commentaire ex requet http://localhost:8080/demo/addcomm?idlieu=1&text=aaaaaaaaaaaaaaaaa
+	@CrossOrigin
     @PostMapping ("/addcomm")
     public @ResponseBody String createCommentaire(@RequestParam Integer idlieu, @RequestParam String text) {
     	Commentaires c = new Commentaires();
@@ -151,6 +213,7 @@ public class MainController {
     }
 
     // Lire tous les commentaires ayant le même idLieu ex requet: http://localhost:8080/demo/lieu?idlieu=1
+    @CrossOrigin
     @SuppressWarnings("unchecked")
 	@GetMapping("/comm/lieu")
     public @ResponseBody Iterable<Commentaires> getCommentairesByLieu(@RequestParam Integer idlieu) {
@@ -159,7 +222,7 @@ public class MainController {
     	return commRepository.findByidLieu(idlieu);
     }
 
-    // Lire un commentaire par son ID ex requet : http://localhost:8080/demo/changevisibility?id=1
+    // changer la visibliliter ex requet : http://localhost:8080/demo/changevisibility?id=1
     @GetMapping("/comm/changevisibility")
     public @ResponseBody String getCommentaireById(@RequestParam Integer id) {
     	commRepository.changeVisibility(id);
@@ -167,8 +230,14 @@ public class MainController {
         
         
     }
-
-    //Supprimer un commentaire par son ID
+    @CrossOrigin
+    @DeleteMapping("/comm/delete/{idCom}")
+    public @ResponseBody String deleteCom(@PathVariable Integer idCom){
+    	commRepository.deleteById(idCom);
+    	String reponce = "Commentaire supprimé, id:" + idCom;
+    	return reponce;
+    }
+    //Modifier un commentaire par son ID
     @PostMapping("/comm/modifcom")
     public @ResponseBody String modifCommentaire(@RequestParam Integer id, @RequestParam Integer idlieu, @RequestParam String text) {
     	commRepository.deleteById(id);
@@ -182,6 +251,7 @@ public class MainController {
     }
     
     // Créer une nouvelle photo ex pequet:http://localhost:8080/demo/addphoto?idlieux=1&path=eeeeeeeeee
+    @CrossOrigin
     @PostMapping("/photo/addphoto")
     public ResponseEntity<String> createPhoto(
             @RequestParam Integer idlieux,
@@ -196,6 +266,7 @@ public class MainController {
     }
     
     // Lire toutes les photos ayant le même idLieux ex requet: http://localhost:8080/demo/photolieux?idlieux=1
+    @CrossOrigin
     @GetMapping("/photo/photolieux")
     public ResponseEntity<Iterable<Photos>> getPhotosByLieux(
             @RequestParam Integer idlieux
@@ -205,6 +276,7 @@ public class MainController {
     }
     
     // Supprimer une photo par son idPhoto http://localhost:8080/demo/photo/2
+    @CrossOrigin
     @DeleteMapping("/photo/{idPhoto}")
     public ResponseEntity<Void> deletePhoto(@PathVariable Integer idPhoto) {
     	photoRepository.deleteById(idPhoto);
